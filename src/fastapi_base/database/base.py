@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, MetaData, func
+from sqlalchemy import BigInteger, DateTime, Identity, MetaData, false, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 NAMING_CONVENTION = {
@@ -19,7 +19,9 @@ class Base(DeclarativeBase):
 class BaseEntity(Base):
     """Base entity with common fields for all tables."""
 
-    id: Mapped[int] = mapped_column(primary_key=True, default=int)
+    __abstract__ = True
+
+    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -28,4 +30,4 @@ class BaseEntity(Base):
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )
     updated_user: Mapped[str | None] = mapped_column(server_default=None)
-    deleted: Mapped[bool] = mapped_column(server_default="0")
+    deleted: Mapped[bool] = mapped_column(default=False, server_default=false())
