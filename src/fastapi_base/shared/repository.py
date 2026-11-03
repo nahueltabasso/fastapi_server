@@ -31,7 +31,7 @@ class BaseRepository[ModelT: BaseEntity, FilterT: BaseFilterDTO]:
         """Get a page of entities with limit and offset."""
         stmt = self.apply_filter(self.base_query(), filters)
         total = await self.session.scalar(
-            select(func.count()).select_from(stmt.subquery)  # type: ignore
+            select(func.count()).select_from(stmt.subquery())
         )
         stmt = (
             self.apply_sort(stmt, filters.sort)

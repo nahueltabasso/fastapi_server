@@ -6,7 +6,7 @@ from fastapi_base.core.exceptions import BusinessLogicError, ErrorCode
 ERROR_STATUS: dict[ErrorCode, int] = {
     ErrorCode.INVALID_CREDENTIALS: status.HTTP_401_UNAUTHORIZED,
     ErrorCode.COLUMN_NOT_FOUND: status.HTTP_400_BAD_REQUEST,
-    ErrorCode.DB_ERROR: status.HTTP_500_INTERNAL_SERVER_ERROR,
+    ErrorCode.DB_ERROR: status.HTTP_409_CONFLICT,
     ErrorCode.NOT_FOUND: status.HTTP_404_NOT_FOUND,
 }
 

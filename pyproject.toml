@@ -2,7 +2,7 @@
 name = "fastapi-base"
 version = "0.1.0"
 description = "Add your description here"
-readme = "README.md"
+readme = "README.adoc"
 authors = [
     { email = "nahueltabasso@gmail.com" }
 ]

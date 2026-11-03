@@ -35,10 +35,10 @@ class BaseService[
         try:
             yield
             await self.session.commit()
-        except (IntegrityError, StaleDataError) as exc:
+        except IntegrityError, StaleDataError:
             await self.session.rollback()
             raise BusinessLogicError(
-                message=f"Database error: {exc}", error_code=ErrorCode.DB_ERROR
+                message="Database error", error_code=ErrorCode.DB_ERROR
             )
         except Exception:
             await self.session.rollback()
@@ -95,7 +95,7 @@ class BaseService[
         """Update a resource by its ID."""
         async with self.transaction():
             entity = await self.get_entity_or_fail(entity_id)
-            for key, value in data.model_dump().items():
+            for key, value in data.model_dump(exclude_unset=True).items():
                 setattr(entity, key, value)
             entity = await self.repository.save(entity)
         return self.read_schema.model_validate(entity)

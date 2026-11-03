@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi_base.api import health
 from fastapi_base.core.config import get_settings
+from fastapi_base.core.error_handlers import register_exception_handlers
 from fastapi_base.core.logging import RequestIdMiddleware, configure_logging
 from fastapi_base.database.session import engine
 
@@ -40,7 +41,7 @@ def create_app() -> FastAPI:
     )
 
     app.add_middleware(RequestIdMiddleware)
-
+    register_exception_handlers(app)
     app.include_router(health.router)
 
     return app

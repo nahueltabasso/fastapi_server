@@ -23,8 +23,8 @@ class Settings(BaseSettings):
 
     jwt_secret_key: SecretStr
     jwt_algorithm: str = "HS256"
-    access_token_ttk_minutes: int = 15
-    refresh_token_ttk_minutes: int = 60 * 24 * 7  # 7 days
+    access_token_ttl_minutes: int = 15
+    refresh_token_ttl_minutes: int = 60 * 24 * 7  # 7 days
 
     cors_origins: list[str] = []
 
