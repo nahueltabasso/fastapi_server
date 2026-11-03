@@ -3,6 +3,9 @@ from enum import StrEnum
 
 class ErrorCode(StrEnum):
     INVALID_CREDENTIALS = "INVALID_CREDENTIALS"
+    COLUMN_NOT_FOUND = "COLUMN_NOT_FOUND"
+    NOT_FOUND = "NOT_FOUND"
+    DB_ERROR = "DB_ERROR"
 
 
 class BusinessLogicError(Exception):
