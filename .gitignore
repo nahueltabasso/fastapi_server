@@ -13,6 +13,7 @@ wheels/
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # Visual Studio Code
 .vscode/
