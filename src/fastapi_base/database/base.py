@@ -21,13 +21,22 @@ class BaseEntity(Base):
 
     __abstract__ = True
 
-    id: Mapped[int] = mapped_column(BigInteger, Identity(always=True), primary_key=True)
+    id: Mapped[int] = mapped_column(
+        BigInteger, Identity(always=True), primary_key=True, sort_order=-100
+    )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+        DateTime(timezone=True), server_default=func.now(), sort_order=100
     )
-    created_user: Mapped[str] = mapped_column(server_default="system")
+    created_user: Mapped[str] = mapped_column(server_default="system", sort_order=100)
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        sort_order=100,
     )
-    updated_user: Mapped[str | None] = mapped_column(server_default=None)
-    deleted: Mapped[bool] = mapped_column(default=False, server_default=false())
+    updated_user: Mapped[str | None] = mapped_column(
+        server_default=None, sort_order=100
+    )
+    deleted: Mapped[bool] = mapped_column(
+        default=False, server_default=false(), sort_order=100
+    )
