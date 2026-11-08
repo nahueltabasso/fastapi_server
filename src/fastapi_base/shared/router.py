@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from enum import Enum
 from typing import Annotated, Any
 
+import structlog
 from fastapi import APIRouter, Query, status
 from pydantic import BaseModel
 
@@ -9,6 +10,9 @@ from fastapi_base.shared.schemas import PageDTO
 from fastapi_base.shared.service import BaseService
 
 AnyService = BaseService[Any, Any, Any, Any, Any]
+
+
+logger = structlog.get_logger(__name__)
 
 
 def build_base_router(
@@ -36,6 +40,7 @@ def build_base_router(
         filterDTO: Annotated[filter_schema, Query()],  # type: ignore[valid-type]
         base_service: service_dep,  # type: ignore[valid-type]
     ) -> PageDTO[read_schema]:  # type: ignore
+        logger.info("Searching with filters", filters=filterDTO)
         return await base_service.search(filters=filterDTO)
 
     @router.get(
@@ -44,6 +49,7 @@ def build_base_router(
     async def get_all(
         service: service_dep,  # type: ignore
     ) -> Sequence[read_schema]:  # type: ignore
+        logger.info("Enter to get_all()")
         return await service.find_all()
 
     @router.get(
@@ -53,6 +59,7 @@ def build_base_router(
         item_id: int,
         service: service_dep,  # type: ignore
     ) -> read_schema:  # type: ignore
+        logger.info("Enter to get_one()", item_id=item_id)
         return await service.get_by_id(item_id)
 
     @router.post("", response_model=read_schema, status_code=status.HTTP_201_CREATED)
@@ -60,6 +67,7 @@ def build_base_router(
         payload: create_schema,  # type: ignore
         service: service_dep,  # type: ignore
     ) -> read_schema:  # type: ignore
+        logger.info("Enter to create()", payload=payload)
         return await service.create(payload)
 
     @router.patch(
@@ -70,6 +78,7 @@ def build_base_router(
         payload: update_schema,  # type: ignore
         service: service_dep,  # type: ignore
     ) -> read_schema:  # type: ignore
+        logger.info("Enter to update()", item_id=item_id, payload=payload)
         return await service.update(item_id, payload)
 
     @router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -77,6 +86,7 @@ def build_base_router(
         item_id: int,
         service: service_dep,  # type: ignore
     ) -> None:
+        logger.info("Enter to delete()", item_id=item_id)
         await service.delete(item_id)
 
     @router.delete("/soft/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -84,6 +94,7 @@ def build_base_router(
         item_id: int,
         service: service_dep,  # type: ignore
     ) -> None:
+        logger.info("Enter to soft_delete()", item_id=item_id)
         await service.soft_delete(item_id)
 
     return router

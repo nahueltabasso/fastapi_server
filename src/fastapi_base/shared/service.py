@@ -1,6 +1,7 @@
 from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 
+import structlog
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,6 +11,8 @@ from fastapi_base.core.exceptions import BusinessLogicError, ErrorCode
 from fastapi_base.database.base import BaseEntity
 from fastapi_base.shared.repository import BaseRepository
 from fastapi_base.shared.schemas import BaseFilterDTO, PageDTO
+
+logger = structlog.get_logger(__name__)
 
 
 class BaseService[
@@ -60,34 +63,40 @@ class BaseService[
 
     async def create(self, data: CreateT) -> ReadT:
         """Create a new resource based on the provided data."""
+        logger.info("Enter to create()")
         async with self.transaction():
             entity = await self.repository.save(self.build_entity(data))
         return self.read_schema.model_validate(entity)
 
     async def find_all(self) -> Sequence[ReadT]:
         """Retrieve all resources that are not soft-deleted."""
+        logger.info("Enter to find_all()")
         entities = await self.repository.find_all()
         return [self.read_schema.model_validate(entity) for entity in entities]
 
     async def get_by_id(self, entity_id: int) -> ReadT:
         """Retrieve a resource by its ID."""
+        logger.info("Enter to get_by_id()")
         entity = await self.get_entity_or_fail(entity_id)
         return self.read_schema.model_validate(entity)
 
     async def delete(self, entity_id: int) -> None:
         """Delete a resource by its ID."""
+        logger.info("Enter to delete()")
         async with self.transaction():
             entity = await self.get_entity_or_fail(entity_id)
             await self.repository.delete(entity)
 
     async def soft_delete(self, entity_id: int) -> None:
         """Logic delete a resource by its ID."""
+        logger.info("Enter to soft_delete()")
         async with self.transaction():
             entity = await self.get_entity_or_fail(entity_id)
             await self.repository.soft_delete(entity)
 
     async def search(self, filters: FilterT) -> PageDTO[ReadT]:
         """Search for resources based on the provided filter criteria."""
+        logger.info("Enter to search()", filters=filters)
         items, total = await self.repository.get_page(filters=filters)
         return PageDTO(
             items=[self.read_schema.model_validate(item) for item in items],
@@ -98,6 +107,7 @@ class BaseService[
 
     async def update(self, entity_id: int, data: UpdateT) -> ReadT:
         """Update a resource by its ID."""
+        logger.info("Enter to update()")
         async with self.transaction():
             entity = await self.get_entity_or_fail(entity_id)
             for key, value in data.model_dump(exclude_unset=True).items():

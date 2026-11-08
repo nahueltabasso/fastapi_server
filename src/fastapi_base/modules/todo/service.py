@@ -1,9 +1,13 @@
 from collections.abc import Sequence
 
+import structlog
+
 from fastapi_base.modules.todo.models import Todo
 from fastapi_base.modules.todo.repository import TodoRepository
 from fastapi_base.modules.todo.schemas import TodoCreateDTO, TodoFilterDTO, TodoReadDTO
 from fastapi_base.shared.service import BaseService
+
+logger = structlog.get_logger(__name__)
 
 
 class TodoService(
@@ -14,5 +18,6 @@ class TodoService(
     repository: TodoRepository
 
     async def get_todos_by_state(self, state: str) -> Sequence[TodoReadDTO]:
+        logger.info("Enter to get_todos_by_state()", state=state)
         entities = await self.repository.get_by_state(state)
         return [self.read_schema.model_validate(entity) for entity in entities]
