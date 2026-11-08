@@ -1,4 +1,4 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from contextlib import asynccontextmanager
 
 from pydantic import BaseModel
@@ -63,6 +63,11 @@ class BaseService[
         async with self.transaction():
             entity = await self.repository.save(self.build_entity(data))
         return self.read_schema.model_validate(entity)
+
+    async def find_all(self) -> Sequence[ReadT]:
+        """Retrieve all resources that are not soft-deleted."""
+        entities = await self.repository.find_all()
+        return [self.read_schema.model_validate(entity) for entity in entities]
 
     async def get_by_id(self, entity_id: int) -> ReadT:
         """Retrieve a resource by its ID."""

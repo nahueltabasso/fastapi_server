@@ -21,6 +21,10 @@ class BaseRepository[ModelT: BaseEntity, FilterT: BaseFilterDTO]:
         """Starting point for every read: excludes soft-deleted rows."""
         return select(self.model).where(self.model.deleted.is_(False))
 
+    async def find_all(self) -> Sequence[ModelT]:
+        """Get all entities that are not soft-deleted."""
+        return (await self.session.scalars(self.base_query())).all()
+
     async def get_by_id(self, entity_id: int) -> ModelT | None:
         """Get an entity by its ID."""
         return await self.session.scalar(
