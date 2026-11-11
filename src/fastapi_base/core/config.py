@@ -21,10 +21,14 @@ class Settings(BaseSettings):
     db_max_overflow: int = 5
     db_pool_timeout: int = 30
 
-    jwt_secret_key: SecretStr
-    jwt_algorithm: str = "HS256"
+    jwt_private_key: SecretStr
+    jwt_public_key: str
+    jwt_key_id: str = "k1"
+    jwt_issuer: str = "fastapi-base"
+    jwt_audience: str = "fastapi-base-api"
     access_token_ttl_minutes: int = 15
-    refresh_token_ttl_minutes: int = 60 * 24 * 7  # 7 days
+    refresh_token_ttl_days: int = 7  # 7 day
+    session_max_days: int = 30
 
     cors_origins: list[str] = []
 
