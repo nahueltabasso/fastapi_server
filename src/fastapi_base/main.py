@@ -4,13 +4,16 @@ import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import fastapi_base.database.events
+import fastapi_base.database.models  # noqa: F401  (tables registration)
 from fastapi_base.api import health
 from fastapi_base.api.v1 import api_router
 from fastapi_base.core.config import get_settings
 from fastapi_base.core.error_handlers import register_exception_handlers
 from fastapi_base.core.logging import RequestIdMiddleware, configure_logging
 from fastapi_base.database.base import Base
-from fastapi_base.database.session import engine
+from fastapi_base.database.seed import seed_roles
+from fastapi_base.database.session import SessionFactory, engine
 
 
 @asynccontextmanager
@@ -19,6 +22,8 @@ async def lifespan(app: FastAPI):
     app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(5.0))
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    async with SessionFactory() as session:
+        await seed_roles(session)
     yield
     await app.state.http.aclose()
     await engine.dispose()
