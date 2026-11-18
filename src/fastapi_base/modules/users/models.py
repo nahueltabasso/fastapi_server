@@ -5,6 +5,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from fastapi_base.database.base import BaseEntity
 
+LOCK_THRESHOLD = 5
+
 
 class User(BaseEntity):
     __tablename__ = "auth_users"
@@ -26,11 +28,23 @@ class User(BaseEntity):
     username: Mapped[str] = mapped_column(String(50), unique=True)
     password: Mapped[str | None] = mapped_column(String(255))
     email: Mapped[str] = mapped_column(String(255), unique=True)
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     is_active: Mapped[bool] = mapped_column(default=True)
     user_locked: Mapped[bool] = mapped_column(default=False)
     failed_login_count: Mapped[int] = mapped_column(default=0)
     last_loging_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    def is_locked(self) -> bool:
+        return self.user_locked
+
+    def register_failed_login(self) -> None:
+        self.failed_login_count += 1
+        if self.failed_login_count >= LOCK_THRESHOLD:
+            self.user_locked = True
+
+    def register_successful_login(self) -> None:
+        self.failed_login_count = 0
+        self.user_locked = False
 
 
 class Role(BaseEntity):

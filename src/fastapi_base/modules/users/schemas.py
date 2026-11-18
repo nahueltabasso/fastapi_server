@@ -1,17 +1,16 @@
 from datetime import datetime
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from fastapi_base.shared.schemas import BaseFilterDTO, BaseInputDTO, BaseOutputDTO
 
-# class UserDTO(BaseInputDTO):
-#     username: str = Field(..., max_length=50)
-#     password: str = Field(..., min_length=8, max_length=25)
-#     email: EmailStr = Field(..., max_length=255)
-#     google_user: bool = False
-#     first_login: bool = True
-#     user_locked: bool = False
-#     fails_attemps: int = 0
+
+class MeDTO(BaseModel):
+    id: int
+    username: str | None
+    email: str
+    has_password: str
+    permissions: list[str]
 
 
 class UserReadDTO(BaseOutputDTO):

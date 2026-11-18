@@ -52,6 +52,13 @@ class RoleRepository(BaseRepository[Role, RoleFilterDTO]):
 class UserRoleRepository(BaseRepository[UserRole, UserRoleFilterDTO]):
     model = UserRole
 
+    async def get_assigment(self, user_id: int, role_id: int) -> UserRole | None:
+        stmt = self.base_query().where(
+            UserRole.user_id == user_id, UserRole.role_id == role_id
+        )
+        assigment: UserRole | None = await self.session.scalar(stmt)
+        return assigment
+
 
 class UserIdentityRepository(BaseRepository[UserIdentity, BaseFilterDTO]):
     model = UserIdentity
