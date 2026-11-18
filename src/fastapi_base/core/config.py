@@ -29,8 +29,22 @@ class Settings(BaseSettings):
     access_token_ttl_minutes: int = 15
     refresh_token_ttl_days: int = 7  # 7 day
     session_max_days: int = 30
+    refresh_cookie_name: str = "refresh_token"
+
+    email_verification_ttl_hours: int = 24
+    password_reset_ttl_minutes: int = 5
+
+    # Email settings
+    smtp_host: str
+    smtp_port: int = 587
+    smtp_username: str | None = None
+    smtp_password: SecretStr | None = None
+    smtp_start_tls: bool = True
+    mail_from: str
+    frontend_url: str
 
     cors_origins: list[str] = []
+    google_client_ids: list[str] = []
 
 
 @lru_cache

@@ -8,6 +8,11 @@ ERROR_STATUS: dict[ErrorCode, int] = {
     ErrorCode.COLUMN_NOT_FOUND: status.HTTP_400_BAD_REQUEST,
     ErrorCode.DB_ERROR: status.HTTP_409_CONFLICT,
     ErrorCode.NOT_FOUND: status.HTTP_404_NOT_FOUND,
+    ErrorCode.PASSWORD_POLICY_VIOLATION: status.HTTP_400_BAD_REQUEST,
+    ErrorCode.UNAUTHORIZED: status.HTTP_401_UNAUTHORIZED,
+    ErrorCode.EMAIL_NOT_VERIFIED: status.HTTP_403_FORBIDDEN,
+    ErrorCode.INVALID_TOKEN: status.HTTP_401_UNAUTHORIZED,
+    ErrorCode.WEAK_PASSWORD: status.HTTP_422_UNPROCESSABLE_ENTITY,
 }
 
 
@@ -25,7 +30,7 @@ def register_exception_handlers(app: FastAPI) -> None:
                 "message": exc.message,
                 "error_code": exc.error_code,
                 "method": request.method,
-                "url": str(request.url),
+                "url": str(request.url.path),
             },
         )
 
@@ -38,6 +43,6 @@ def register_exception_handlers(app: FastAPI) -> None:
                 "message": "Internal server error",
                 "error_code": "INTERNAL_SERVER_ERROR",
                 "method": request.method,
-                "url": str(request.url),
+                "url": str(request.url.path),
             },
         )
