@@ -1,16 +1,14 @@
-from collections.abc import AsyncIterator, Sequence
-from contextlib import asynccontextmanager
+from collections.abc import Sequence
 
 import structlog
 from pydantic import BaseModel
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm.exc import StaleDataError
 
 from fastapi_base.core.exceptions import BusinessLogicError, ErrorCode
 from fastapi_base.database.base import BaseEntity
 from fastapi_base.shared.repository import BaseRepository
 from fastapi_base.shared.schemas import BaseFilterDTO, PageDTO
+from fastapi_base.shared.transaction import TransactionalService
 
 logger = structlog.get_logger(__name__)
 
@@ -21,7 +19,7 @@ class BaseService[
     UpdateT: BaseModel,
     ReadT: BaseModel,
     FilterT: BaseFilterDTO,
-]:
+](TransactionalService):
     """CRUD service with common operations for a given model."""
 
     read_schema: type[ReadT]
@@ -30,22 +28,8 @@ class BaseService[
     def __init__(
         self, session: AsyncSession, repository: BaseRepository[ModelT, FilterT]
     ) -> None:
-        self.session = session
+        super().__init__(session)
         self.repository = repository
-
-    @asynccontextmanager
-    async def transaction(self) -> AsyncIterator[None]:
-        try:
-            yield
-            await self.session.commit()
-        except IntegrityError, StaleDataError:
-            await self.session.rollback()
-            raise BusinessLogicError(
-                message="Database error", error_code=ErrorCode.DB_ERROR
-            )
-        except Exception:
-            await self.session.rollback()
-            raise
 
     def build_entity(self, data: CreateT) -> ModelT:
         """Build an entity instance from the provided data."""

@@ -27,9 +27,10 @@ class BaseRepository[ModelT: BaseEntity, FilterT: BaseFilterDTO]:
 
     async def get_by_id(self, entity_id: int) -> ModelT | None:
         """Get an entity by its ID."""
-        return await self.session.scalar(
+        entity: ModelT | None = await self.session.scalar(
             self.base_query().where(self.model.id == entity_id)
         )
+        return entity
 
     async def get_page(self, filters: FilterT) -> tuple[Sequence[ModelT], int]:
         """Get a page of entities with limit and offset."""
@@ -73,5 +74,4 @@ class BaseRepository[ModelT: BaseEntity, FilterT: BaseFilterDTO]:
     async def soft_delete(self, entity: ModelT) -> None:
         """Soft delete an entity by setting its deleted flag to True."""
         entity.deleted = True
-        self.session.add(entity)
         await self.session.flush()
