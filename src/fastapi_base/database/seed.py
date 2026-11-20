@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi_base.modules.users.models import Role, RolePermission
 
 ROLE_PERMISSIONS: dict[str, set[str]] = {
-    "user": {"todos:read", "todos:write"},
+    "user": {"todos:read", "todos:write", "users:read", "users:write"},
     "admin": {"todos:read", "todos:write", "users:read", "users:write", "users:manage"},
 }
 

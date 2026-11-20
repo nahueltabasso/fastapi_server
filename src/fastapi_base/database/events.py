@@ -16,6 +16,7 @@ def fill_audit_columns(session: Session, flush_context: Any, instances: Any) -> 
     for obj in session.new:
         if isinstance(obj, BaseEntity):
             obj.created_user = user
+            obj.updated_user = user
     for obj in session.dirty:
         if isinstance(obj, BaseEntity) and session.is_modified(obj):
             obj.updated_user = user
