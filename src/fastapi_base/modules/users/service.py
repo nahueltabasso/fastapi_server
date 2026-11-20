@@ -51,7 +51,7 @@ class UserService(TransactionalService):
             id=user.id,
             username=user.username,
             email=user.email,
-            has_password=bool(user.password),  # type: ignore
+            has_password=bool(user.password),
             permissions=sorted(principal.permissions),
         )
 

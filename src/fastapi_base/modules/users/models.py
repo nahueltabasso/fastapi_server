@@ -29,7 +29,7 @@ class User(BaseEntity):
     password: Mapped[str | None] = mapped_column(String(255))
     email: Mapped[str] = mapped_column(String(255), unique=True)
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    is_active: Mapped[bool] = mapped_column(default=True)
+    is_active: Mapped[bool] = mapped_column(default=False)
     user_locked: Mapped[bool] = mapped_column(default=False)
     failed_login_count: Mapped[int] = mapped_column(default=0)
     last_loging_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -62,12 +62,14 @@ class Role(BaseEntity):
 
 class UserRole(BaseEntity):
     __tablename__ = "auth_user_roles"
-    __table_args__ = Index(
-        "uq_user_roles_user_role_active",
-        "user_id",
-        "role_id",
-        unique=True,
-        postgresql_where="NOT deleted",
+    __table_args__ = (
+        Index(
+            "uq_user_roles_user_role_active",
+            "user_id",
+            "role_id",
+            unique=True,
+            postgresql_where=text("NOT deleted"),
+        ),
     )
 
     user_id: Mapped[int] = mapped_column(
@@ -80,12 +82,14 @@ class UserRole(BaseEntity):
 
 class RolePermission(BaseEntity):
     __tablename__ = "auth_role_permissions"
-    __table_args__ = Index(
-        "uq_auth_role_permissions_active",
-        "role_id",
-        "permission",
-        unique=True,
-        postgresql_where=text("NOT deleted"),
+    __table_args__ = (
+        Index(
+            "uq_auth_role_permissions_active",
+            "role_id",
+            "permission",
+            unique=True,
+            postgresql_where=text("NOT deleted"),
+        ),
     )
     role_id: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("auth_roles.id", ondelete="CASCADE"), index=True
@@ -95,12 +99,14 @@ class RolePermission(BaseEntity):
 
 class UserIdentity(BaseEntity):
     __tablename__ = "auth_user_identities"
-    __table_args__ = Index(
-        "uq_auth_user_identities_active",
-        "provider",
-        "subject",
-        unique=True,
-        postgresql_where=text("NOT deleted"),
+    __table_args__ = (
+        Index(
+            "uq_auth_user_identities_active",
+            "provider",
+            "subject",
+            unique=True,
+            postgresql_where=text("NOT deleted"),
+        ),
     )
 
     user_id: Mapped[int] = mapped_column(

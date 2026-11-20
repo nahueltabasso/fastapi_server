@@ -9,7 +9,7 @@ class MeDTO(BaseModel):
     id: int
     username: str | None
     email: str
-    has_password: str
+    has_password: bool
     permissions: list[str]
 
 
@@ -24,9 +24,7 @@ class UserReadDTO(BaseOutputDTO):
 
 
 class UserUpdateDTO(BaseInputDTO):
-    username: str | None = Field(
-        None, min_length=3, max_length=50, pattern="^[a-zA-Z0-9_]+$"
-    )
+    username: str | None = Field(None, min_length=3, max_length=80)
 
 
 class UserFilterDTO(BaseFilterDTO): ...
