@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
+import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi_base.core.config import get_settings
@@ -35,6 +36,8 @@ from fastapi_base.shared.transaction import TransactionalService
 
 DEFAULT_ROLE = "user"
 GOOGLE = "google"
+
+logger = structlog.get_logger(__name__)
 
 
 class AuthService(TransactionalService):
@@ -73,6 +76,15 @@ class AuthService(TransactionalService):
         password = dataDTO.password.get_secret_value()
         check_password_policy(password=password, email=dataDTO.email)
 
+        if (
+            dataDTO.password.get_secret_value()
+            != dataDTO.confirm_password.get_secret_value()
+        ):
+            raise BusinessLogicError(
+                message="Passwords do not match",
+                error_code=ErrorCode.PASSWORD_NOT_MATCH,
+            )
+
         password_hash = await hash_password(password=password)
         raw_token: str | None = None
 
@@ -82,7 +94,7 @@ class AuthService(TransactionalService):
                     User(
                         username=dataDTO.username,
                         email=dataDTO.email,
-                        password_hash=password_hash,
+                        password=password_hash,
                     )
                 )
                 await self._assign_default_role(user_id=user.id)
@@ -105,11 +117,13 @@ class AuthService(TransactionalService):
                 raw=dataDTO.token.get_secret_value(),
                 purpose=TokenPurpose.VERIFY_EMAIL,
             )
+            logger.info("Consumed token", token=token)
             user: User | None = await self.user_repository.get_by_id(
                 entity_id=token.user_id  # type: ignore
             )
             if user is not None:
                 user.email_verified_at = datetime.now(UTC)
+                user.is_active = True
                 verified = True
 
         if not verified:
@@ -224,6 +238,12 @@ class AuthService(TransactionalService):
     async def reset_password(self, dataDTO: ResetPasswordDTO) -> None:
         """Reset the password for the user using the provided token and new password."""
         new_password = dataDTO.new_password.get_secret_value()
+        confirm_password = dataDTO.confirm_password.get_secret_value()
+        if new_password != confirm_password:
+            raise BusinessLogicError(
+                message="Passwords do not match",
+                error_code=ErrorCode.PASSWORD_NOT_MATCH,
+            )
         notify: str | None = None
         async with self.transaction():
             action_token = await self.action_token_repository.consume(

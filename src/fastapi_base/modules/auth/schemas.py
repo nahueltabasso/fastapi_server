@@ -11,6 +11,7 @@ class RegisterDTO(BaseInputDTO):
     username: str = Field(max_length=255)
     email: EmailStr = Field(max_length=255)
     password: SecretStr = Field(min_length=8, max_length=255)
+    confirm_password: SecretStr = Field(min_length=8, max_length=255)
 
 
 class LoginDTO(BaseInputDTO):
@@ -30,6 +31,7 @@ class ActionTokenDTO(BaseInputDTO):
 class ResetPasswordDTO(BaseInputDTO):
     token: SecretStr = Field(min_length=20, max_length=255)
     new_password: SecretStr = Field(min_length=8, max_length=255)
+    confirm_password: SecretStr = Field(min_length=8, max_length=255)
 
 
 class ChangePasswordDTO(BaseInputDTO):
@@ -49,7 +51,7 @@ class GoogleLinkDTO(BaseInputDTO):
 
 class TokenResponseDTO(BaseModel):
     access_token: str
-    token_type: str = "bearer"
+    token_type: str = "Bearer"
     expires_in: int
     refresh_token: str | None = None
 

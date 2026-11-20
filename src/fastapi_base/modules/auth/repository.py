@@ -57,7 +57,7 @@ class ActionTokenRepository:
             .where(
                 ActionToken.user_id == user_id,
                 ActionToken.purpose == purpose,
-                ActionToken.expires_at.is_(None),
+                ActionToken.used_at.is_(None),
             )
             .values(used_at=now)
         )
@@ -80,7 +80,7 @@ class ActionTokenRepository:
             .where(
                 ActionToken.token_hash == hash_opaque_token(raw),
                 ActionToken.purpose == purpose,
-                ActionToken.expires_at.is_(None),
+                ActionToken.used_at.is_(None),
                 ActionToken.expires_at > now,
             )
             .values(used_at=now)
