@@ -1,8 +1,11 @@
 from collections.abc import Sequence
 
 import structlog
+from fastapi import Depends
 
+from fastapi_base.api.deps import require
 from fastapi_base.modules.todo.dependencies import TodoServiceDep
+from fastapi_base.modules.todo.permissions import TodoPermission
 from fastapi_base.modules.todo.schemas import TodoCreateDTO, TodoFilterDTO, TodoReadDTO
 from fastapi_base.shared.router import build_base_router
 
@@ -17,10 +20,17 @@ router = build_base_router(
     update_schema=TodoCreateDTO,
     filter_schema=TodoFilterDTO,
     read_schema=TodoReadDTO,
+    read_permission=TodoPermission.READ,
+    write_permission=TodoPermission.WRITE,
 )
 
 
-@router.get("/filter/{state}", response_model=list[TodoReadDTO], status_code=200)
+@router.get(
+    "/filter/{state}",
+    response_model=list[TodoReadDTO],
+    status_code=200,
+    dependencies=[Depends(require(TodoPermission.READ))],
+)
 async def get_by_state(
     state: str,
     service: TodoServiceDep,
