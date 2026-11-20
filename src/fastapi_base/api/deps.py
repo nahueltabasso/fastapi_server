@@ -12,6 +12,8 @@ from fastapi_base.core.exceptions import BusinessLogicError, ErrorCode
 from fastapi_base.core.security.principal import Principal
 from fastapi_base.core.security.tokens import decode_access_token
 from fastapi_base.database.session import get_session
+from fastapi_base.modules.auth.repository import RefreshTokenRepository
+from fastapi_base.modules.auth.sessions import SessionService
 from fastapi_base.modules.users.repository import UserRepository
 from fastapi_base.modules.users.service import SessionRevoker
 
@@ -36,8 +38,8 @@ async def get_principal(
             message="Invalid token", error_code=ErrorCode.UNAUTHORIZED
         ) from exc
     user_repository = UserRepository(session)
-    user = await user_repository.get_by_id(claims["sub"])
-    if user is None or user.is_active:
+    user = await user_repository.get_by_id(int(claims["sub"]))
+    if user is None or not user.is_active:
         raise BusinessLogicError(
             message="Invalid token", error_code=ErrorCode.UNAUTHORIZED
         )
