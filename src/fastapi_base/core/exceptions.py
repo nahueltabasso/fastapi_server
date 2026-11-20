@@ -12,6 +12,7 @@ class ErrorCode(StrEnum):
     INVALID_TOKEN = "INVALID_TOKEN"
     WEAK_PASSWORD = "WEAK_PASSWORD"
     USER_LOCKED = "USER_LOCKED"
+    PASSWORD_NOT_MATCH = "PASSWORD_NOT_MATCH"
 
 
 class BusinessLogicError(Exception):

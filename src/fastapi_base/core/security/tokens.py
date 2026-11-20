@@ -1,7 +1,7 @@
 import hashlib
 import secrets
 import uuid
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
@@ -13,7 +13,7 @@ ALGORITHM = "EdDSA"
 
 def create_access_token(user_id: int, session_id: uuid.UUID) -> tuple[str, int]:
     settings = get_settings()
-    now = datetime.now()
+    now = datetime.now(UTC)
     ttl = timedelta(minutes=settings.access_token_ttl_minutes)
     claims = {
         "iss": settings.jwt_issuer,

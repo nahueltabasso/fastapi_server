@@ -39,6 +39,7 @@ class SmtpEmailSender:
                 start_tls=self._settings.smtp_start_tls,
                 timeout=10,
             )
+            logger.info("Email sent successfully", to=to, subject=subject)
         except aiosmtplib.SMTPException, OSError:
             logger.exception(
                 "email_send_failed", subject=subject, to_domain=to.rsplit("@", 1)[-1]
