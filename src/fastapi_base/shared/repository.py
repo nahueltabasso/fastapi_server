@@ -17,7 +17,7 @@ class BaseRepository[ModelT: BaseEntity, FilterT: BaseFilterDTO]:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    def base_query(self) -> Select[Any]:
+    def base_query(self) -> Select[ModelT]:
         """Starting point for every read: excludes soft-deleted rows."""
         return select(self.model).where(self.model.deleted.is_(False))
 

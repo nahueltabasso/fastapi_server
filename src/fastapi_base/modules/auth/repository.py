@@ -50,7 +50,7 @@ class ActionTokenRepository:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
-    async def issue(self, user_id, purpose: TokenPurpose, ttl: timedelta) -> str:
+    async def issue(self, user_id: int, purpose: TokenPurpose, ttl: timedelta) -> str:
         now = datetime.now(UTC)
         await self.session.execute(
             update(ActionToken)

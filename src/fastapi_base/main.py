@@ -1,3 +1,4 @@
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import httpx
@@ -17,7 +18,7 @@ from fastapi_base.database.session import SessionFactory, engine
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     configure_logging(json_logs=get_settings().json_logs)
     app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(5.0))
     async with engine.begin() as conn:

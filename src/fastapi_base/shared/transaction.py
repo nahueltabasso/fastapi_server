@@ -1,3 +1,4 @@
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import structlog
@@ -15,7 +16,7 @@ class TransactionalService:
         self.session = session
 
     @asynccontextmanager
-    async def transaction(self):
+    async def transaction(self) -> AsyncIterator[None]:
         try:
             yield
             await self.session.commit()
@@ -24,7 +25,7 @@ class TransactionalService:
             logger.warning("database conflict", error_type=type(e).__name__)
             raise BusinessLogicError(
                 message="Database error", error_code=ErrorCode.DB_ERROR
-            )
+            ) from e
         except Exception:
             await self.session.rollback()
             raise

@@ -56,7 +56,7 @@ async def seach(
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(require(UserPermission.WRITE))],
 )
-async def remove_role(user_id: UserId, role: str, service: UserServiceDep):
+async def remove_role(user_id: UserId, role: str, service: UserServiceDep) -> None:
     await service.remove_role(user_id, role)
 
 
@@ -65,5 +65,5 @@ async def remove_role(user_id: UserId, role: str, service: UserServiceDep):
     status_code=status.HTTP_204_NO_CONTENT,
     dependencies=[Depends(require(UserPermission.WRITE))],
 )
-async def deactivate_user(user_id: UserId, service: UserServiceDep):
+async def deactivate_user(user_id: UserId, service: UserServiceDep) -> None:
     await service.deactivate_user(user_id)
