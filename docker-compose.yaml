@@ -11,6 +11,22 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - fastapi_base
+  
+  fastapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./src:/opt/project/server/src
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+    restart: always
+    networks:
+      - fastapi_base
 
 volumes:
   postgres_data:
