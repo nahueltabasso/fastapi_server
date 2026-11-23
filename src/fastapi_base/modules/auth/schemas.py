@@ -8,7 +8,7 @@ ClientType = Literal["web", "mobile"]
 
 
 class RegisterDTO(BaseInputDTO):
-    username: str = Field(max_length=255)
+    username: str = Field(max_length=50)
     email: EmailStr = Field(max_length=255)
     password: SecretStr = Field(min_length=8, max_length=255)
     confirm_password: SecretStr = Field(min_length=8, max_length=255)

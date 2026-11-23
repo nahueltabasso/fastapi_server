@@ -1,7 +1,7 @@
 from collections.abc import Sequence
 from typing import Any
 
-from sqlalchemy import Select, select
+from sqlalchemy import Select
 
 from fastapi_base.modules.todo.models import Todo
 from fastapi_base.modules.todo.schemas import TodoFilterDTO
@@ -12,7 +12,9 @@ class TodoRepository(BaseRepository[Todo, TodoFilterDTO]):
     model = Todo
 
     async def get_by_state(self, state: str) -> Sequence[Todo]:
-        result = await self.session.execute(select(Todo).where(Todo.state == state))
+        result = await self.session.execute(
+            self.base_query().where(Todo.state == state)
+        )
         return result.scalars().all()
 
     def apply_filter(

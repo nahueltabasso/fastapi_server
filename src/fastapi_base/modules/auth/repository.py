@@ -14,7 +14,7 @@ class RefreshTokenRepository:
 
     async def save(self, refresh_token: RefreshToken) -> None:
         self.session.add(refresh_token)
-        await self.session.commit()
+        await self.session.flush()
 
     async def find_by_token(self, token: str) -> RefreshToken | None:
         result = await self.session.scalars(

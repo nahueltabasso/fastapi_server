@@ -23,6 +23,7 @@ class TodoService(
     def __init__(
         self, repository: TodoRepository, session: AsyncSession, principal: Principal
     ):
+        super().__init__(session, repository)
         self.repository = repository
         self.session = session
         self.principal = principal
@@ -32,10 +33,10 @@ class TodoService(
         entities = await self.repository.get_by_state(state)
         return [self.read_schema.model_validate(entity) for entity in entities]
 
-    async def create(self, dataDTO: TodoCreateDTO) -> TodoReadDTO:
-        logger.info("Enter to create() hijo", dataDTO=dataDTO)
+    async def create(self, data: TodoCreateDTO) -> TodoReadDTO:
+        logger.info("Enter to create()", dataDTO=data)
 
-        if dataDTO.user_id != self.principal.user_id:
+        if data.user_id != self.principal.user_id:
             raise BusinessLogicError(
                 message="User ID does not match the principal's user ID",
                 error_code=ErrorCode.UNAUTHORIZED,
@@ -43,9 +44,9 @@ class TodoService(
         async with self.transaction():
             todo = await self.repository.save(
                 Todo(
-                    user_id=dataDTO.user_id,
-                    title=dataDTO.title,
-                    state=dataDTO.state,
+                    user_id=data.user_id,
+                    title=data.title,
+                    state=data.state,
                 )
             )
         return self.read_schema.model_validate(todo)

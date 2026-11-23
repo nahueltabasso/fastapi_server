@@ -24,7 +24,7 @@ class UserReadDTO(BaseOutputDTO):
 
 
 class UserUpdateDTO(BaseInputDTO):
-    username: str | None = Field(None, min_length=3, max_length=80)
+    username: str | None = Field(None, min_length=3, max_length=50)
 
 
 class UserFilterDTO(BaseFilterDTO): ...

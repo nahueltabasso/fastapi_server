@@ -119,7 +119,7 @@ class AuthService(TransactionalService):
             )
             logger.info("Consumed token", token=token)
             user: User | None = await self.user_repository.get_by_id(
-                entity_id=token.user_id  # type: ignore
+                entity_id=token.user_id if token else 0
             )
             if user is not None:
                 user.email_verified_at = datetime.now(UTC)
@@ -199,11 +199,11 @@ class AuthService(TransactionalService):
             pair, _ = await self.session_service.rotate(
                 raw_token=raw_token, request_context=request_context
             )
-            if pair is None:
-                raise BusinessLogicError(
-                    message="Invalid session", error_code=ErrorCode.UNAUTHORIZED
-                )
-            return pair
+        if pair is None:
+            raise BusinessLogicError(
+                message="Invalid session", error_code=ErrorCode.UNAUTHORIZED
+            )
+        return pair
 
     async def logout(self, raw_token: str) -> None:
         """Logout the user represented by the given principal."""
@@ -291,6 +291,12 @@ class AuthService(TransactionalService):
 
         # Save the new password for the user
         new_password = dataDTO.new_password.get_secret_value()
+        confirm_password = dataDTO.confirm_password.get_secret_value()
+        if new_password != confirm_password:
+            raise BusinessLogicError(
+                message="New password and confirm password do not match",
+                error_code=ErrorCode.PASSWORD_NOT_MATCH,
+            )
         check_password_policy(password=new_password, email=user.email)
         new_password_hash = await hash_password(new_password)
 

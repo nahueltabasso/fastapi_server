@@ -68,7 +68,7 @@ class UserService(TransactionalService):
         logger.info("Enter to search()")
         items, total = await self.user_repository.get_page(filters=filterDTO)
         return PageDTO(
-            items=[UserReadDTO.from_orm(item) for item in items],
+            items=[UserReadDTO.model_validate(item) for item in items],
             total=total,
             limit=filterDTO.limit,
             offset=filterDTO.offset,
@@ -86,7 +86,7 @@ class UserService(TransactionalService):
                 )
 
             if (
-                self.user_role_repository.get_assigment(
+                await self.user_role_repository.get_assigment(
                     user_id=user.id, role_id=role.id
                 )
                 is None

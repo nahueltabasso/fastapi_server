@@ -17,9 +17,12 @@ class TransactionalService:
 
     @asynccontextmanager
     async def transaction(self) -> AsyncIterator[None]:
+        depth: int = self.session.info.get("tx_depth", 0)
+        self.session.info["tx_depth"] = depth + 1
         try:
             yield
-            await self.session.commit()
+            if depth == 0:
+                await self.session.commit()
         except (IntegrityError, StaleDataError) as e:
             await self.session.rollback()
             logger.warning("database conflict", error_type=type(e).__name__)
@@ -27,5 +30,8 @@ class TransactionalService:
                 message="Database error", error_code=ErrorCode.DB_ERROR
             ) from e
         except Exception:
-            await self.session.rollback()
+            if depth == 0:
+                await self.session.rollback()
             raise
+        finally:
+            self.session.info["tx_depth"] = depth
