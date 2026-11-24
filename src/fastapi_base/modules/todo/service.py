@@ -24,8 +24,6 @@ class TodoService(
         self, repository: TodoRepository, session: AsyncSession, principal: Principal
     ):
         super().__init__(session, repository)
-        self.repository = repository
-        self.session = session
         self.principal = principal
 
     async def get_todos_by_state(self, state: str) -> Sequence[TodoReadDTO]:

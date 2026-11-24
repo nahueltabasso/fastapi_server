@@ -24,7 +24,8 @@ class TransactionalService:
             if depth == 0:
                 await self.session.commit()
         except (IntegrityError, StaleDataError) as e:
-            await self.session.rollback()
+            if depth == 0:
+                await self.session.rollback()
             logger.warning("database conflict", error_type=type(e).__name__)
             raise BusinessLogicError(
                 message="Database error", error_code=ErrorCode.DB_ERROR

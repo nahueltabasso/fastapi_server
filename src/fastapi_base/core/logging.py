@@ -72,7 +72,7 @@ def configure_logging(*, json_logs: bool, level: str = "INFO") -> None:
                     "level": level,
                     "propagate": False,
                 },
-                "sqlalchemy.engine": {"level": "INFO"},
+                "sqlalchemy.engine": {"level": "WARNING"},
             },
         }
     )

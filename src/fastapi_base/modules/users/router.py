@@ -14,6 +14,7 @@ from fastapi_base.modules.users.schemas import (
 from fastapi_base.shared.schemas import PageDTO
 
 router = APIRouter(prefix="/users", tags=["users"])
+ADMIN_ONLY = [Depends(require(UserPermission.MANAGE))]
 UserId = Annotated[int, Path(ge=1)]
 
 
@@ -21,18 +22,12 @@ UserId = Annotated[int, Path(ge=1)]
     "/me",
     response_model=MeDTO,
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require(UserPermission.READ))],
 )
 async def me(principal: CurrentPrincipal, service: UserServiceDep) -> MeDTO:
     return await service.get_me(principal)
 
 
-@router.patch(
-    "/me",
-    response_model=MeDTO,
-    status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require(UserPermission.WRITE))],
-)
+@router.patch("/me", response_model=MeDTO, status_code=status.HTTP_200_OK)
 async def update_me(
     userUpdateDTO: UserUpdateDTO, principal: CurrentPrincipal, service: UserServiceDep
 ) -> MeDTO:
@@ -43,9 +38,9 @@ async def update_me(
     "/search",
     response_model=PageDTO[UserReadDTO],
     status_code=status.HTTP_200_OK,
-    dependencies=[Depends(require(UserPermission.READ))],
+    dependencies=ADMIN_ONLY,
 )
-async def seach(
+async def search(
     filterDTO: Annotated[UserFilterDTO, Query()], service: UserServiceDep
 ) -> PageDTO[UserReadDTO]:
     return await service.search(filterDTO)
@@ -54,7 +49,7 @@ async def seach(
 @router.delete(
     "/{user_id}/roles/{role}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require(UserPermission.WRITE))],
+    dependencies=ADMIN_ONLY,
 )
 async def remove_role(user_id: UserId, role: str, service: UserServiceDep) -> None:
     await service.remove_role(user_id, role)
@@ -63,7 +58,7 @@ async def remove_role(user_id: UserId, role: str, service: UserServiceDep) -> No
 @router.post(
     "/deactivate/{user_id}",
     status_code=status.HTTP_204_NO_CONTENT,
-    dependencies=[Depends(require(UserPermission.WRITE))],
+    dependencies=ADMIN_ONLY,
 )
 async def deactivate_user(user_id: UserId, service: UserServiceDep) -> None:
     await service.deactivate_user(user_id)
