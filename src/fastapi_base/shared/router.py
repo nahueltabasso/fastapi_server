@@ -25,6 +25,9 @@ def build_base_router(
     update_schema: type[BaseModel],
     filter_schema: type[BaseModel],
     read_schema: type[BaseModel],
+    expose_get_all: bool = False,
+    expose_search: bool = False,
+    allow_hard_delete: bool = False,
     read_permission: str,
     write_permission: str,
     dependencies: Sequence[Any] = (),
@@ -39,30 +42,34 @@ def build_base_router(
     can_read = [Depends(require(read_permission))]
     can_write = [Depends(require(write_permission))]
 
-    @router.get(
-        "/search",
-        response_model=PageDTO[read_schema],
-        status_code=status.HTTP_200_OK,
-        dependencies=can_read,
-    )
-    async def search(
-        filterDTO: Annotated[filter_schema, Query()],  # type: ignore[valid-type]
-        base_service: service_dep,  # type: ignore[valid-type]
-    ) -> PageDTO[read_schema]:  # type: ignore
-        logger.info("Searching with filters", filters=filterDTO)
-        return await base_service.search(filters=filterDTO)
+    if expose_search:
 
-    @router.get(
-        "",
-        response_model=Sequence[read_schema],
-        status_code=status.HTTP_200_OK,
-        dependencies=can_read,
-    )
-    async def get_all(
-        service: service_dep,  # type: ignore
-    ) -> Sequence[read_schema]:  # type: ignore
-        logger.info("Enter to get_all()")
-        return await service.find_all()
+        @router.get(
+            "/search",
+            response_model=PageDTO[read_schema],
+            status_code=status.HTTP_200_OK,
+            dependencies=can_read,
+        )
+        async def search(
+            filterDTO: Annotated[filter_schema, Query()],  # type: ignore[valid-type]
+            base_service: service_dep,  # type: ignore[valid-type]
+        ) -> PageDTO[read_schema]:  # type: ignore
+            logger.info("Searching with filters", filters=filterDTO)
+            return await base_service.search(filters=filterDTO)
+
+    if expose_get_all:
+
+        @router.get(
+            "",
+            response_model=Sequence[read_schema],
+            status_code=status.HTTP_200_OK,
+            dependencies=can_read,
+        )
+        async def get_all(
+            service: service_dep,  # type: ignore
+        ) -> Sequence[read_schema]:  # type: ignore
+            logger.info("Enter to get_all()")
+            return await service.find_all()
 
     @router.get(
         "/{item_id}",
@@ -104,15 +111,17 @@ def build_base_router(
         logger.info("Enter to update()", item_id=item_id, payload=payload)
         return await service.update(item_id, payload)
 
-    @router.delete(
-        "/{item_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=can_write
-    )
-    async def delete(
-        item_id: ItemId,
-        service: service_dep,  # type: ignore
-    ) -> None:
-        logger.info("Enter to delete()", item_id=item_id)
-        await service.delete(item_id)
+    if allow_hard_delete:
+
+        @router.delete(
+            "/{item_id}", status_code=status.HTTP_204_NO_CONTENT, dependencies=can_write
+        )
+        async def delete(
+            item_id: ItemId,
+            service: service_dep,  # type: ignore
+        ) -> None:
+            logger.info("Enter to delete()", item_id=item_id)
+            await service.delete(item_id)
 
     @router.delete(
         "/soft/{item_id}",
