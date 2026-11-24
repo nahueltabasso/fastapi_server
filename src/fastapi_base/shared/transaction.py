@@ -17,12 +17,20 @@ class TransactionalService:
 
     @asynccontextmanager
     async def transaction(self) -> AsyncIterator[None]:
+        """Transactional context manager.
+
+        This context manager handles nested transactions and ensures that
+        commits and rollbacks are performed correctly based on the transaction depth.
+        """
         depth: int = self.session.info.get("tx_depth", 0)
         self.session.info["tx_depth"] = depth + 1
         try:
-            yield
             if depth == 0:
+                yield
                 await self.session.commit()
+            else:
+                async with self.session.begin_nested():  # SAVEPOINT
+                    yield
         except (IntegrityError, StaleDataError) as e:
             if depth == 0:
                 await self.session.rollback()
