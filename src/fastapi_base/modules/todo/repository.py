@@ -11,9 +11,9 @@ from fastapi_base.shared.repository import BaseRepository
 class TodoRepository(BaseRepository[Todo, TodoFilterDTO]):
     model = Todo
 
-    async def get_by_state(self, state: str) -> Sequence[Todo]:
+    async def get_by_state(self, state: str, user_id: int) -> Sequence[Todo]:
         result = await self.session.execute(
-            self.base_query().where(Todo.state == state)
+            self.base_query().where(Todo.state == state, Todo.user_id == user_id)
         )
         return result.scalars().all()
 
