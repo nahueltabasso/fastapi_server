@@ -1,9 +1,10 @@
 from typing import Annotated
 
 import structlog
-from fastapi import APIRouter, Body, Request, Response, status
+from fastapi import APIRouter, Body, Depends, Request, Response, status
 
 from fastapi_base.api.deps import CurrentPrincipal
+from fastapi_base.core.rate_limit import rate_limit_by_ip
 from fastapi_base.modules.auth.cookies import (
     clear_refresh_cookie,
     deliver_tokens,
@@ -52,7 +53,11 @@ async def resend_verification_email(email: str, service: AuthServiceDep) -> Mess
     return MessageDTO(message="Verification email resent successfully")
 
 
-@router.post("/login", status_code=status.HTTP_200_OK)
+@router.post(
+    "/login",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(rate_limit_by_ip("login", limit=10, window_s=60))],
+)
 async def login(
     dataDTO: LoginDTO,
     response: Response,
@@ -104,7 +109,13 @@ async def logout_all(
 
 
 # Password management endpoints
-@router.post("/password/forgot-password", status_code=status.HTTP_202_ACCEPTED)
+@router.post(
+    "/password/forgot-password",
+    status_code=status.HTTP_202_ACCEPTED,
+    dependencies=[
+        Depends(rate_limit_by_ip("forgot-password", limit=20, window_s=3600))
+    ],
+)
 async def forgot_password(email: str, service: AuthServiceDep) -> MessageDTO:
     logger.info("Forgot password endpoint called", email=email)
     await service.forgot_password(email=email)

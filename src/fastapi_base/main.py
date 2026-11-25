@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 import httpx
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from redis.asyncio import Redis
 
 import fastapi_base.database.events
 import fastapi_base.database.models  # noqa: F401  (tables registration)
@@ -12,6 +13,7 @@ from fastapi_base.api.v1 import api_router
 from fastapi_base.core.config import get_settings
 from fastapi_base.core.error_handlers import register_exception_handlers
 from fastapi_base.core.logging import RequestIdMiddleware, configure_logging
+from fastapi_base.core.rate_limit import InMemoryRateLimiter, RedisRateLimiter
 from fastapi_base.database.base import Base
 from fastapi_base.database.seed import seed_roles
 from fastapi_base.database.session import SessionFactory, engine
@@ -19,8 +21,13 @@ from fastapi_base.database.session import SessionFactory, engine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    configure_logging(
-        json_logs=get_settings().json_logs, level=get_settings().logging_level
+    settings = get_settings()
+    configure_logging(json_logs=settings.json_logs, level=settings.logging_level)
+    redis = Redis.from_url(settings.redis_url) if settings.redis_url else None
+    if redis is None and settings.env == "production":
+        raise RuntimeError("APP_REDIS_URL is required in production")
+    app.state.rate_limiter = (
+        RedisRateLimiter(redis) if redis is not None else InMemoryRateLimiter()
     )
     app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(5.0))
     async with engine.begin() as conn:
@@ -30,6 +37,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     yield
     await app.state.http.aclose()
     await engine.dispose()
+    if redis is not None:
+        await redis.aclose()
 
 
 def create_app() -> FastAPI:

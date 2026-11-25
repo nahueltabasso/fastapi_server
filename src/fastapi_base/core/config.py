@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     cors_origins: list[str] = []
     google_client_ids: list[str] = []
 
+    # Redis
+    redis_url: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:
