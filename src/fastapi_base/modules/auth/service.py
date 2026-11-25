@@ -161,7 +161,7 @@ class AuthService(TransactionalService):
             raise BusinessLogicError(
                 message="Invalid credentials", error_code=ErrorCode.INVALID_CREDENTIALS
             )
-        if user.user_locked is True:
+        if user.is_locked() is True:
             raise BusinessLogicError(
                 message="User account is locked", error_code=ErrorCode.USER_LOCKED
             )

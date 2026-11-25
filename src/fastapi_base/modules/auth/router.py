@@ -34,7 +34,7 @@ OptionalRefresh = Annotated[RefreshDTO | None, Body()]
 async def register(
     dataDTO: RegisterDTO, service: AuthServiceDep, request_context: ContextDep
 ) -> MessageDTO:
-    logger.info("Register endpoint called", data=dataDTO)
+    logger.info("Register endpoint called")
     await service.register_user(dataDTO=dataDTO)
     return MessageDTO(message="User registered successfully")
 
@@ -59,7 +59,7 @@ async def login(
     service: AuthServiceDep,
     request_context: ContextDep,
 ) -> TokenResponseDTO:
-    logger.info("Login endpoint called", data=dataDTO)
+    logger.info("Login endpoint called")
     return deliver_tokens(
         pair=await service.login(dataDTO, request_context), response=response
     )
@@ -115,7 +115,7 @@ async def forgot_password(email: str, service: AuthServiceDep) -> MessageDTO:
 async def reset_password(
     dataDTO: ResetPasswordDTO, response: Response, service: AuthServiceDep
 ) -> None:
-    logger.info("Reset password endpoint called", data=dataDTO)
+    logger.info("Reset password endpoint called")
     await service.reset_password(dataDTO)
     clear_refresh_cookie(response)
 
@@ -124,5 +124,5 @@ async def reset_password(
 async def change_password(
     dataDTO: ChangePasswordDTO, principal: CurrentPrincipal, service: AuthServiceDep
 ) -> None:
-    logger.info("Change password endpoint called", data=dataDTO)
+    logger.info("Change password endpoint called")
     await service.change_password(dataDTO, principal)
