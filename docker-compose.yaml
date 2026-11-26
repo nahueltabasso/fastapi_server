@@ -11,6 +11,15 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - fastapi_base
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
   
   fastapi:
     build:
