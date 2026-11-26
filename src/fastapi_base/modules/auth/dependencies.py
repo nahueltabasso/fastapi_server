@@ -2,11 +2,11 @@ from typing import Annotated
 
 from fastapi import BackgroundTasks, Depends
 
-from fastapi_base.api.deps import SessionDep
 from fastapi_base.core.config import get_settings
 from fastapi_base.core.context import RequestContext
 from fastapi_base.core.deferred import DeferredTasks
 from fastapi_base.core.email import EmailSender, SmtpEmailSender
+from fastapi_base.database.session import SessionDep
 from fastapi_base.modules.auth.google import GoogleVerifier, get_google_verifier
 from fastapi_base.modules.auth.mailer import AuthMailer
 from fastapi_base.modules.auth.repository import (

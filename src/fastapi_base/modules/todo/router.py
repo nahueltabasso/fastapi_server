@@ -3,7 +3,6 @@ from collections.abc import Sequence
 import structlog
 from fastapi import Depends
 
-from fastapi_base.api.deps import require
 from fastapi_base.modules.todo.dependencies import TodoServiceDep
 from fastapi_base.modules.todo.permissions import TodoPermission
 from fastapi_base.modules.todo.schemas import (
@@ -13,6 +12,7 @@ from fastapi_base.modules.todo.schemas import (
     TodoUpdateDTO,
 )
 from fastapi_base.shared.router import build_base_router
+from fastapi_base.shared.security import require
 
 logger = structlog.get_logger(__name__)
 

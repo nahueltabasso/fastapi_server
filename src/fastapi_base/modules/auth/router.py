@@ -3,7 +3,6 @@ from typing import Annotated
 import structlog
 from fastapi import APIRouter, Body, Depends, Request, Response, status
 
-from fastapi_base.api.deps import CurrentPrincipal
 from fastapi_base.core.rate_limit import rate_limit_by_ip
 from fastapi_base.modules.auth.cookies import (
     clear_refresh_cookie,
@@ -21,6 +20,7 @@ from fastapi_base.modules.auth.schemas import (
     ResetPasswordDTO,
     TokenResponseDTO,
 )
+from fastapi_base.shared.security import CurrentPrincipal
 
 logger = structlog.get_logger(__name__)
 

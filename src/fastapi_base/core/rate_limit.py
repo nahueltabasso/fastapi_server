@@ -1,5 +1,5 @@
+import time
 from collections.abc import Awaitable, Callable
-from time import time
 from typing import Protocol
 
 from fastapi import Request

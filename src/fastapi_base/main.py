@@ -16,7 +16,8 @@ from fastapi_base.core.logging import RequestIdMiddleware, configure_logging
 from fastapi_base.core.rate_limit import InMemoryRateLimiter, RedisRateLimiter
 from fastapi_base.database.base import Base
 from fastapi_base.database.seed import seed_roles
-from fastapi_base.database.session import SessionFactory, engine
+from fastapi_base.database.session import Database
+from fastapi_base.modules.auth.principal import load_principal, session_revoker_factory
 
 
 @asynccontextmanager
@@ -29,16 +30,20 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.rate_limiter = (
         RedisRateLimiter(redis) if redis is not None else InMemoryRateLimiter()
     )
+    db: Database = Database(settings)
+    app.state.db = db
     app.state.http = httpx.AsyncClient(timeout=httpx.Timeout(5.0))
-    async with engine.begin() as conn:
+    async with db.engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    async with SessionFactory() as session:
+    async with db.sessionmaker() as session:
         await seed_roles(session)
-    yield
-    await app.state.http.aclose()
-    await engine.dispose()
-    if redis is not None:
-        await redis.aclose()
+    try:
+        yield
+    finally:
+        await app.state.http.aclose()
+        await app.state.db.dispose()
+        if redis is not None:
+            await redis.aclose()
 
 
 def create_app() -> FastAPI:
@@ -52,6 +57,10 @@ def create_app() -> FastAPI:
         redoc_url=None,
         openapi_url="/openapi.json" if not is_prod else None,
     )
+
+    app.state.settings = settings
+    app.state.principal_loader = load_principal
+    app.state.session_revoker_factory = session_revoker_factory
 
     app.add_middleware(
         CORSMiddleware,
@@ -67,6 +76,3 @@ def create_app() -> FastAPI:
     app.include_router(api_router)
 
     return app
-
-
-app = create_app()

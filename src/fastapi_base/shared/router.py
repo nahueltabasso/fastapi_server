@@ -6,8 +6,8 @@ import structlog
 from fastapi import APIRouter, Depends, Path, Query, status
 from pydantic import BaseModel
 
-from fastapi_base.api.deps import require
 from fastapi_base.shared.schemas import PageDTO
+from fastapi_base.shared.security import require
 from fastapi_base.shared.service import BaseService
 
 AnyService = BaseService[Any, Any, Any, Any, Any]

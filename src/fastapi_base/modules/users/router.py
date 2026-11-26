@@ -2,7 +2,6 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Path, Query, status
 
-from fastapi_base.api.deps import CurrentPrincipal, require
 from fastapi_base.modules.users.dependencies import UserServiceDep
 from fastapi_base.modules.users.permissions import UserPermission
 from fastapi_base.modules.users.schemas import (
@@ -12,6 +11,7 @@ from fastapi_base.modules.users.schemas import (
     UserUpdateDTO,
 )
 from fastapi_base.shared.schemas import PageDTO
+from fastapi_base.shared.security import CurrentPrincipal, require
 
 router = APIRouter(prefix="/users", tags=["users"])
 ADMIN_ONLY = [Depends(require(UserPermission.MANAGE))]

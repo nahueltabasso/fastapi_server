@@ -1,14 +1,23 @@
+from collections.abc import Callable
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Request
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi_base.api.deps import SessionDep, get_session_revoker
+from fastapi_base.database.session import SessionDep
 from fastapi_base.modules.users.repository import (
     RoleRepository,
     UserRepository,
     UserRoleRepository,
 )
 from fastapi_base.modules.users.service import SessionRevoker, UserService
+
+
+def get_session_revoker(request: Request, session: SessionDep) -> SessionRevoker:
+    factory: Callable[[AsyncSession], SessionRevoker] = (
+        request.app.state.session_revoker_factory
+    )
+    return factory(session)
 
 
 def get_user_service(
