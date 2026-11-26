@@ -39,6 +39,7 @@ async def get_principal(
             message="Invalid token", error_code=ErrorCode.UNAUTHORIZED
         ) from exc
     session_id = uuid.UUID(claims["sid"])
+    # Validate if the session is still active
     refresh_token_repository = RefreshTokenRepository(session)
     if not await refresh_token_repository.is_session_active(
         session_id, now=datetime.now(UTC)
