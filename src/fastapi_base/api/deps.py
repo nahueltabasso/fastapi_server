@@ -1,5 +1,6 @@
 import uuid
 from collections.abc import Awaitable, Callable
+from datetime import UTC, datetime
 from typing import Annotated
 
 import jwt
@@ -37,6 +38,14 @@ async def get_principal(
         raise BusinessLogicError(
             message="Invalid token", error_code=ErrorCode.UNAUTHORIZED
         ) from exc
+    session_id = uuid.UUID(claims["sid"])
+    refresh_token_repository = RefreshTokenRepository(session)
+    if not await refresh_token_repository.is_session_active(
+        session_id, now=datetime.now(UTC)
+    ):
+        raise BusinessLogicError(
+            message="Session Revoked", error_code=ErrorCode.UNAUTHORIZED
+        )
     user_repository = UserRepository(session)
     user = await user_repository.get_by_id(int(claims["sub"]))
     if user is None or not user.is_active:

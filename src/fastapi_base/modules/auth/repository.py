@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import select, update
+from sqlalchemy import exists, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi_base.core.security.tokens import hash_opaque_token, new_opaque_token
@@ -44,6 +44,17 @@ class RefreshTokenRepository:
             stmt = stmt.where(RefreshToken.id != keep)
         stmt = stmt.values(revoked_at=now)
         await self.session.execute(stmt)
+
+    async def is_session_active(self, family_id: uuid.UUID, now: datetime) -> bool:
+        """True while the session is neither revoked nor expired"""
+        stmt = select(
+            exists().where(
+                RefreshToken.family_id == family_id,
+                RefreshToken.revoked_at.is_(None),
+                RefreshToken.expires_at > now,
+            )
+        )
+        return bool(await self.session.scalar(stmt))
 
 
 class ActionTokenRepository:

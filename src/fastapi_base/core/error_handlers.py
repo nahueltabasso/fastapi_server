@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from fastapi_base.core.exceptions import BusinessLogicError, ErrorCode
@@ -21,8 +22,39 @@ ERROR_STATUS: dict[ErrorCode, int] = {
 }
 
 
+def _body(
+    request: Request, status_code: int, message: str, code: str
+) -> dict[str, object]:
+    return {
+        "status": status_code,
+        "message": message,
+        "error_code": code,
+        "method": request.method,
+        "url": str(request.url.path),
+    }
+
+
 def register_exception_handlers(app: FastAPI) -> None:
     """Register custom exceptions handlers for the FastAPI Application."""
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error_handler(
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        errros = [
+            {"loc": list(e["loc"]), "msg": e["msg"], "type": e["type"]}
+            for e in exc.errors()
+        ]
+        content = _body(
+            request=request,
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            message="Validation error",
+            code=str(ErrorCode.VALIDATION_ERROR),
+        )
+        return JSONResponse(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            content={**content, "errors": errros},
+        )
 
     @app.exception_handler(BusinessLogicError)
     async def business_exception_handler(
@@ -30,24 +62,24 @@ def register_exception_handlers(app: FastAPI) -> None:
     ) -> JSONResponse:
         return JSONResponse(
             status_code=ERROR_STATUS.get(exc.error_code, status.HTTP_400_BAD_REQUEST),
-            content={
-                "status": ERROR_STATUS.get(exc.error_code, status.HTTP_400_BAD_REQUEST),
-                "message": exc.message,
-                "error_code": exc.error_code,
-                "method": request.method,
-                "url": str(request.url.path),
-            },
+            content=_body(
+                request=request,
+                status_code=ERROR_STATUS.get(
+                    exc.error_code, status.HTTP_400_BAD_REQUEST
+                ),
+                message=exc.message,
+                code=str(exc.error_code),
+            ),
         )
 
     @app.exception_handler(Exception)
     async def unhandled_error_handler(request: Request, exc: Exception) -> JSONResponse:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={
-                "status": status.HTTP_500_INTERNAL_SERVER_ERROR,
-                "message": "Internal server error",
-                "error_code": "INTERNAL_SERVER_ERROR",
-                "method": request.method,
-                "url": str(request.url.path),
-            },
+            content=_body(
+                request=request,
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                message="Internal server error",
+                code="INTERNAL_SERVER_ERROR",
+            ),
         )
