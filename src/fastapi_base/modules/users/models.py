@@ -25,9 +25,9 @@ class User(BaseEntity):
         ),
     )
 
-    username: Mapped[str] = mapped_column(String(50), unique=True)
+    username: Mapped[str] = mapped_column(String(50))
     password: Mapped[str | None] = mapped_column(String(255))
-    email: Mapped[str] = mapped_column(String(255), unique=True)
+    email: Mapped[str] = mapped_column(String(255))
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     is_active: Mapped[bool] = mapped_column(default=False)
     user_locked: Mapped[bool] = mapped_column(default=False)
@@ -57,7 +57,7 @@ class Role(BaseEntity):
             postgresql_where=text("NOT deleted"),
         ),
     )
-    role: Mapped[str] = mapped_column(String(50), unique=True)
+    role: Mapped[str] = mapped_column(String(50))
 
 
 class UserRole(BaseEntity):
