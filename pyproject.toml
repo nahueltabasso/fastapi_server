@@ -40,6 +40,11 @@ line-length = 88
 select = ["E", "F", "I", "UP", "B", "SIM"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+ "src/fastapi_base/core/exceptions.py" = ["S105"]
+ "src/fastapi_base/modules/auth/models.py" = ["S105"]
+ "src/fastapi_base/modules/auth/schemas.py" = ["S105"]
+
 [tool.ruff.format]
 quote-style = "double"
 
